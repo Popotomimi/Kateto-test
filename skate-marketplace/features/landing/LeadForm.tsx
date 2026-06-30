@@ -19,23 +19,49 @@ const leadFormSchema = z.object({
 
 type LeadFormData = z.infer<typeof leadFormSchema>;
 
+type Status = "idle" | "loading" | "success" | "error";
+
 export default function LeadForm() {
-  const [status, setStatus] = useState<"idle" | "success">("idle");
+  const [status, setStatus] = useState<Status>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<LeadFormData>({
     resolver: zodResolver(leadFormSchema),
   });
 
-  async function onSubmit() {
-    setStatus("success");
-    await new Promise((r) => setTimeout(r, 1500));
-    reset();
-    setStatus("idle");
+  async function onSubmit(data: LeadFormData) {
+    setStatus("loading");
+    setErrorMessage("");
+
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const json = await res.json();
+
+      if (!json.success) {
+        setErrorMessage(json.error ?? "Erro ao enviar");
+        setStatus("error");
+        return;
+      }
+
+      setStatus("success");
+      setTimeout(() => {
+        reset();
+        setStatus("idle");
+      }, 2000);
+    } catch {
+      setErrorMessage("Erro de conexão. Tente novamente.");
+      setStatus("error");
+    }
   }
 
   return (
@@ -104,12 +130,20 @@ export default function LeadForm() {
         </div>
       </div>
 
+      {errorMessage && (
+        <p className="mt-4 text-center text-sm text-red-400">{errorMessage}</p>
+      )}
+
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={status === "loading"}
         className="mt-6 w-full rounded-full bg-amber-500 px-6 py-3 font-semibold text-zinc-900 transition-all hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {status === "success" ? "Enviado!" : "Quero Receber Contato"}
+        {status === "loading"
+          ? "Enviando..."
+          : status === "success"
+            ? "Enviado!"
+            : "Quero Receber Contato"}
       </button>
     </form>
   );
