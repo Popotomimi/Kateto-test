@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createLead } from "@/services/lead.service";
+import { createLead, findLeads } from "@/services/lead.service";
 
 const leadSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
@@ -31,6 +31,18 @@ export async function POST(request: Request) {
       { success: true, data: lead },
       { status: 201 },
     );
+  } catch {
+    return NextResponse.json(
+      { success: false, error: "Erro interno do servidor" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    const leads = await findLeads();
+    return NextResponse.json({ success: true, data: leads });
   } catch {
     return NextResponse.json(
       { success: false, error: "Erro interno do servidor" },
