@@ -1,24 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { getSession, logout } from "@/lib/api/auth";
 import KanbanBoard from "@/features/kanban/KanbanBoard";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
   const [authLoading, setAuthLoading] = useState(true);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
   useEffect(() => {
     let isActive = true;
 
     async function verifySession() {
       try {
-        const res = await fetch("/api/auth/me", {
-          credentials: "include",
-        });
-        const json = await res.json();
+        const json = await getSession();
 
         if (!isActive) return;
 
@@ -27,7 +26,7 @@ export default function DashboardPage() {
           return;
         }
 
-        setUserEmail(json.data.email);
+        setUserEmail(json.data!.email);
       } catch {
         if (isActive) {
           router.replace("/login");
@@ -46,16 +45,20 @@ export default function DashboardPage() {
     };
   }, [router]);
 
-  async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+  const handleLogout = useCallback(async () => {
+    setLogoutLoading(true);
+    await logout();
     toast.success("Logout realizado com sucesso");
     router.replace("/login");
-  }
+  }, [router]);
 
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-500">
-        Carregando...
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-zinc-700 border-t-amber-500" />
+          <p className="text-sm">Carregando...</p>
+        </div>
       </div>
     );
   }
@@ -73,9 +76,10 @@ export default function DashboardPage() {
             <span className="text-sm text-zinc-400">{userEmail}</span>
             <button
               onClick={handleLogout}
-              className="rounded-full border border-zinc-700 px-4 py-1.5 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-100"
+              disabled={logoutLoading}
+              className="rounded-full border border-zinc-700 px-4 py-1.5 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Sair
+              {logoutLoading ? "Saindo..." : "Sair"}
             </button>
           </div>
         </div>

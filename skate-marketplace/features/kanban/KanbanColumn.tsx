@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import type { ILead } from "@/types";
 import KanbanCard from "./KanbanCard";
@@ -11,7 +12,7 @@ interface KanbanColumnProps {
   leads: (ILead & { _id: string })[];
 }
 
-export default function KanbanColumn({ id, title, color, leads }: KanbanColumnProps) {
+function KanbanColumn({ id, title, color, leads }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
   return (
@@ -43,3 +44,5 @@ export default function KanbanColumn({ id, title, color, leads }: KanbanColumnPr
     </div>
   );
 }
+
+export default memo(KanbanColumn);
