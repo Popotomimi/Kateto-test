@@ -1,10 +1,14 @@
 import { connectToDatabase } from "@/lib/mongoose";
 import { Lead } from "@/models/lead";
 import type { ILeadInput, LeadStatus } from "@/types";
+import { assignNextSeller } from "@/services/round-robin.service";
 
-export async function createLead(data: ILeadInput & { seller: string }) {
+export async function createLead(data: ILeadInput) {
   await connectToDatabase();
-  return Lead.create(data);
+
+  const seller = await assignNextSeller();
+
+  return Lead.create({ ...data, seller });
 }
 
 export async function findLeads() {
