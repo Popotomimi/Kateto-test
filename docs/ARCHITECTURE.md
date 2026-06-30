@@ -2,7 +2,7 @@
 
 ## Visão Geral
 
-Este projeto foi desenvolvido como uma aplicação Full Stack utilizando o Next.js 15 (App Router), permitindo que Frontend e Backend coexistam no mesmo projeto.
+Este projeto foi desenvolvido como uma aplicação Full Stack utilizando o Next.js 16 (App Router), permitindo que Frontend e Backend coexistam no mesmo projeto.
 
 O objetivo foi reduzir complexidade, facilitar a manutenção e acelerar o desenvolvimento sem perder organização.
 
@@ -19,7 +19,7 @@ Toda comunicação entre Frontend e Backend ocorre através de Route Handlers do
 
 Frontend
 
-- Next.js 15
+- Next.js 16
 - React 19
 - TypeScript
 - Tailwind CSS
@@ -39,8 +39,6 @@ Banco de Dados
 
 # Estrutura
 
-src/
-
 app/
 
 components/
@@ -51,7 +49,7 @@ hooks/
 
 lib/
 
-middleware/
+proxy.ts (raiz)
 
 models/
 

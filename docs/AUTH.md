@@ -32,7 +32,7 @@ Remove o cookie de autenticação.
 
 # Proteção de Rotas
 
-Todas as rotas da área administrativa serão protegidas por Middleware.
+Todas as rotas da área administrativa serão protegidas via Proxy (antigo Middleware no Next.js 15).
 
 Caso o JWT seja inválido:
 

@@ -23,7 +23,7 @@ Você NÃO deve implementar funcionalidades diretamente, exceto quando solicitad
 
 A aplicação será construída utilizando:
 
-- Next.js 15 (App Router)
+- Next.js 16 (App Router)
 - React 19
 - TypeScript
 - Tailwind CSS
