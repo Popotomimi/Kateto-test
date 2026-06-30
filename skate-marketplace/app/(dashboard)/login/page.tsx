@@ -2,18 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -26,14 +25,15 @@ export default function LoginPage() {
       const json = await res.json();
 
       if (!json.success) {
-        setError(json.error ?? "Erro ao fazer login");
+        toast.error(json.error ?? "Erro ao fazer login");
         setLoading(false);
         return;
       }
 
+      toast.success("Login realizado com sucesso");
       router.replace("/dashboard");
     } catch {
-      setError("Erro de conexão");
+      toast.error("Erro de conexão");
       setLoading(false);
     }
   }
@@ -80,8 +80,6 @@ export default function LoginPage() {
             />
           </div>
         </div>
-
-        {error && <p className="mt-4 text-center text-sm text-red-400">{error}</p>}
 
         <button
           type="submit"
