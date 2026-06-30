@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { submitLead } from "@/lib/api/leads";
 
 const leadFormSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
@@ -32,28 +33,17 @@ export default function LeadForm() {
   async function onSubmit(data: LeadFormData) {
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+    const { success, error } = await submitLead(data);
 
-      const json = await res.json();
-
-      if (!json.success) {
-        toast.error(json.error ?? "Erro ao enviar lead");
-        setLoading(false);
-        return;
-      }
-
-      toast.success("Lead enviado com sucesso!");
-      reset();
-    } catch {
-      toast.error("Erro de conexão. Tente novamente.");
-    } finally {
+    if (!success) {
+      toast.error(error ?? "Erro ao enviar lead");
       setLoading(false);
+      return;
     }
+
+    toast.success("Lead enviado com sucesso!");
+    reset();
+    setLoading(false);
   }
 
   return (

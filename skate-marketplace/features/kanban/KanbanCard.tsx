@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import type { ILead } from "@/types";
 
@@ -7,7 +8,7 @@ interface KanbanCardProps {
   lead: ILead & { _id: string };
 }
 
-export default function KanbanCard({ lead }: KanbanCardProps) {
+function KanbanCard({ lead }: KanbanCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: lead._id,
     data: { status: lead.status },
@@ -38,3 +39,5 @@ export default function KanbanCard({ lead }: KanbanCardProps) {
     </div>
   );
 }
+
+export default memo(KanbanCard);

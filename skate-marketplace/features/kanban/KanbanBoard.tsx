@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
 import { toast } from "react-toastify";
 import type { ILead, LeadStatus } from "@/types";
+import { fetchLeads, updateLeadStatus } from "@/lib/api/leads";
 import KanbanColumn from "./KanbanColumn";
+
+const POLL_INTERVAL = 15_000;
 
 const COLUMNS: { id: LeadStatus; title: string; color: string }[] = [
   { id: "novo", title: "Sem Contato", color: "bg-amber-500" },
@@ -21,20 +24,6 @@ const STATUS_LABEL: Record<LeadStatus, string> = {
 };
 
 type LeadWithId = ILead & { _id: string };
-
-async function fetchLeads(): Promise<LeadWithId[]> {
-  const response = await fetch("/api/leads", {
-    cache: "no-store",
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error("Falha ao carregar leads");
-  }
-
-  const json = await response.json();
-  return json.success ? (json.data as LeadWithId[]) : [];
-}
 
 function SkeletonBoard() {
   return (
@@ -54,22 +43,23 @@ function SkeletonBoard() {
 export default function KanbanBoard() {
   const [leads, setLeads] = useState<LeadWithId[]>([]);
   const [loading, setLoading] = useState(true);
+  const isDragging = useRef(false);
 
   useEffect(() => {
-    let isActive = true;
+    const isActive = { current: true };
 
     async function loadLeads() {
       try {
         const data = await fetchLeads();
-        if (isActive) {
+        if (isActive.current) {
           setLeads(data);
         }
       } catch {
-        if (isActive) {
+        if (isActive.current) {
           setLeads([]);
         }
       } finally {
-        if (isActive) {
+        if (isActive.current) {
           setLoading(false);
         }
       }
@@ -77,39 +67,51 @@ export default function KanbanBoard() {
 
     void loadLeads();
 
+    const interval = setInterval(() => {
+      if (!isDragging.current) {
+        void loadLeads();
+      }
+    }, POLL_INTERVAL);
+
     return () => {
-      isActive = false;
+      isActive.current = false;
+      clearInterval(interval);
     };
   }, []);
 
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      isDragging.current = true;
+      const { active, over } = event;
 
-    if (!over || active.id === over.id) return;
-
-    const newStatus = over.id as LeadStatus;
-    const leadId = String(active.id);
-
-    const previous = leads;
-
-    setLeads((prev) =>
-      prev.map((lead) => (lead._id === leadId ? { ...lead, status: newStatus } : lead)),
-    );
-
-    toast.success(`Lead movido para ${STATUS_LABEL[newStatus]}`);
-
-    void fetch(`/api/leads/${leadId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ status: newStatus }),
-    }).then(async (res) => {
-      if (!res.ok) {
-        setLeads(previous);
-        toast.error("Erro ao atualizar status");
+      if (!over || active.id === over.id) {
+        isDragging.current = false;
+        return;
       }
-    });
-  }
+
+      const newStatus = over.id as LeadStatus;
+      const leadId = String(active.id);
+
+      const previous = leads;
+
+      setLeads((prev) =>
+        prev.map((lead) =>
+          lead._id === leadId ? { ...lead, status: newStatus } : lead,
+        ),
+      );
+
+      toast.success(`Lead movido para ${STATUS_LABEL[newStatus]}`);
+
+      void updateLeadStatus(leadId, newStatus).then((ok) => {
+        if (!ok) {
+          setLeads(previous);
+          toast.error("Erro ao atualizar status");
+        }
+        isDragging.current = false;
+      });
+    },
+    [leads],
+  );
 
   const grouped = useMemo(
     () =>

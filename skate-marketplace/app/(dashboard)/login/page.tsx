@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { login } from "@/lib/api/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,28 +15,16 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
+    const { success, error } = await login(email, password);
 
-      const json = await res.json();
-
-      if (!json.success) {
-        toast.error(json.error ?? "Erro ao fazer login");
-        setLoading(false);
-        return;
-      }
-
-      toast.success("Login realizado com sucesso");
-      router.replace("/dashboard");
-    } catch {
-      toast.error("Erro de conexão");
+    if (!success) {
+      toast.error(error ?? "Erro ao fazer login");
       setLoading(false);
+      return;
     }
+
+    toast.success("Login realizado com sucesso");
+    router.replace("/dashboard");
   }
 
   return (
