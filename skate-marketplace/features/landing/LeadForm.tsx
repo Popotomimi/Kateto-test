@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,10 +12,7 @@ const leadFormSchema = z.object({
   phone: z
     .string()
     .min(10, "Telefone inválido")
-    .regex(
-      /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/,
-      "Telefone inválido. Use (XX) XXXXX-XXXX",
-    ),
+    .regex(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/, "Telefone inválido. Use (XX) XXXXX-XXXX"),
 });
 
 type LeadFormData = z.infer<typeof leadFormSchema>;
@@ -53,6 +51,7 @@ export default function LeadForm() {
         return;
       }
 
+      toast.success("Dados enviados com sucesso!");
       setStatus("success");
       setTimeout(() => {
         reset();
@@ -71,68 +70,51 @@ export default function LeadForm() {
     >
       <div className="space-y-5">
         <div>
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-zinc-300"
-          >
+          <label htmlFor="name" className="block text-sm font-medium text-zinc-300">
             Nome
           </label>
           <input
             id="name"
             type="text"
             placeholder="Seu nome"
-            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 transition-colors focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 transition-colors focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none"
             {...register("name")}
           />
-          {errors.name && (
-            <p className="mt-1 text-xs text-red-400">{errors.name.message}</p>
-          )}
+          {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name.message}</p>}
         </div>
 
         <div>
-          <label
-            htmlFor="desiredItem"
-            className="block text-sm font-medium text-zinc-300"
-          >
+          <label htmlFor="desiredItem" className="block text-sm font-medium text-zinc-300">
             O que você deseja?
           </label>
           <input
             id="desiredItem"
             type="text"
             placeholder="Ex: Longboard para cruise, Skate Street para manobras..."
-            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 transition-colors focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 transition-colors focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none"
             {...register("desiredItem")}
           />
           {errors.desiredItem && (
-            <p className="mt-1 text-xs text-red-400">
-              {errors.desiredItem.message}
-            </p>
+            <p className="mt-1 text-xs text-red-400">{errors.desiredItem.message}</p>
           )}
         </div>
 
         <div>
-          <label
-            htmlFor="phone"
-            className="block text-sm font-medium text-zinc-300"
-          >
+          <label htmlFor="phone" className="block text-sm font-medium text-zinc-300">
             Telefone
           </label>
           <input
             id="phone"
             type="tel"
             placeholder="(11) 99999-8888"
-            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 transition-colors focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 transition-colors focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none"
             {...register("phone")}
           />
-          {errors.phone && (
-            <p className="mt-1 text-xs text-red-400">{errors.phone.message}</p>
-          )}
+          {errors.phone && <p className="mt-1 text-xs text-red-400">{errors.phone.message}</p>}
         </div>
       </div>
 
-      {errorMessage && (
-        <p className="mt-4 text-center text-sm text-red-400">{errorMessage}</p>
-      )}
+      {errorMessage && <p className="mt-4 text-center text-sm text-red-400">{errorMessage}</p>}
 
       <button
         type="submit"
